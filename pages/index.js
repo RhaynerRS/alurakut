@@ -1,5 +1,6 @@
 import React from 'react'
 import {useState} from 'react';
+import { useEffect } from 'react';
 import MainGrid from '../src/components/MainGrid'
 import Box from '../src/components/Box'
 import {AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet} from '../src/lib/alurakutCommons.js'
@@ -16,11 +17,35 @@ function ProfileSidebar(props){
     <AlurakutProfileSidebarMenuDefault />
   </Box>)
 }
+function GithubFollowers(props){
+  return(<ProfileRelationsBoxWrapper>
+    <h2 className="smallTitle">{props.title} ({props.items.length})</h2>
+
+  <ul>
+  {/*{props.items((itemAtual)=>{return(
+  <li key={itemAtual.id}><a href={`https://github.com/${props.items.login}`} >
+    <img src={itemAtual.image}/>
+    <span>{itemAtual.title}</span>
+  </a></li>
+  )})}*/}
+  </ul>
+
+  </ProfileRelationsBoxWrapper>)
+}
 export default function Home() {
   const [comunidades,setComunidades]=useState([]);
-  const githubUser = "RhaynerRS"
+  const githubUser = "tetzdesen"
   const pessoasFavoritas=["tetzdesen","juunegreiros","omariosouto"]
 
+  const [segidores,setSegidores]=useState([])
+    useEffect(function(){
+      fetch(`https://api.github.com/users/${githubUser}/followers`).then
+      (function (respostaServidor){if(respostaServidor.ok)
+      { return respostaServidor.json()}
+      throw new Error (`Aconteceu algo errado ( ${respostaServidor.status} )`)})
+      .then(function(respostaConvertida){setSegidores(respostaConvertida)});
+    },[])
+    
   return (
   <>
   <AlurakutMenu githubUser={githubUser}/>
@@ -67,6 +92,7 @@ export default function Home() {
       </Box>
     </div>
     <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+      <GithubFollowers items={segidores} title="Seguidores"/>
       <ProfileRelationsBoxWrapper><h2 className="smallTitle">Comunidades ({comunidades.length})</h2>
 
         <ul>
