@@ -55,12 +55,17 @@ export default function Home() {
   //inicio
   const [segidores, setSegidores] = useState([])
 
-    // API GraphQL
+    
+
+  //useState que busca os seguidores na api do githib e os exibe
+  //inicio
+  useEffect(function () {
+   // API GraphQL
     //inicio
     fetch('https://graphql.datocms.com/', {
       method: 'POST',
       headers: {
-        'Authorization': '6686f9aada7e6525140114c9ffc9b6',
+        'Authorization': '287d4521ff52303203a3293cfef557',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
@@ -78,11 +83,7 @@ export default function Home() {
       const comunidadesVindasDoDato = respostaCompleta.data.allCommunities;
       setComunidades(comunidadesVindasDoDato)
     })
-  //fim
-
-  //useState que busca os seguidores na api do githib e os exibe
-  //inicio
-  useEffect(function () {
+    //fim
 
     fetch(`https://api.github.com/users/${githubUser}/followers`).then
       (function (respostaServidor) {
