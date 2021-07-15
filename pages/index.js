@@ -1,5 +1,4 @@
-const { SiteClient } = require('datocms-client')
-const client = new SiteClient('98ed52190da0354328bc8ed17cc8a8')
+
 import React from 'react'
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -49,29 +48,44 @@ function GithubFollowers(props) {
 
 export default function Home() {
   const [comunidades, setComunidades] = useState([]);
-  const githubUser = 'RhaynerRS'
+  const githubUser = 'tetzdesen'
   const pessoasFavoritas = ["RhaynerRS", "juunegreiros", "omariosouto", "tetzdesen", "esin", "nathyts", "RhaynerRS", "juunegreiros", "omariosouto"]
 
   //pego os dados dos seguidores por meio da API do Github
   //inicio
   const [segidores, setSegidores] = useState([])
 
-  useEffect(async () => {
-    try {
-      const comunity = await client.items.all({ filter: { type: "community" } })
-      setComunidades(comunity)
-      console.log(comunity)
-    } catch (error) {
-      console.log(error)
-    }
-  }, [])
+    // API GraphQL
+    //inicio
+    fetch('https://graphql.datocms.com/', {
+      method: 'POST',
+      headers: {
+        'Authorization': '6686f9aada7e6525140114c9ffc9b6',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ "query": `query {
+        allCommunities {
+          id
+          title
+          imageurl
+          creatorslug
+        }
+      }` })
+    })
+    .then((response) => response.json()) // Pega o retorno do response.json() e já retorna
+    .then((respostaCompleta) => {
+      const comunidadesVindasDoDato = respostaCompleta.data.allCommunities;
+      console.log(comunidadesVindasDoDato)
+      setComunidades(comunidadesVindasDoDato)
+    })
   //fim
 
   //useState que busca os seguidores na api do githib e os exibe
   //inicio
   useEffect(function () {
 
-    fetch(`https://api.github.com/users/tetzdesen/followers`).then
+    fetch(`https://api.github.com/users/${githubUser}/followers`).then
       (function (respostaServidor) {
         if (respostaServidor.ok) { return respostaServidor.json() }
         throw new Error(`Aconteceu algo errado ( ${respostaServidor.status} )`)
@@ -91,26 +105,34 @@ export default function Home() {
             <OrkutNostalgicIconSet sexy="2" confiavel="3" legal="1"/>
           </Box>
           <Box><h2 className="subTitle">O que você deseja fazer</h2>
-            <form onSubmit={
-              //função assincrona que grava dados no DATO
-              //inicio
-              async function createRecord(e) {
-                try {
-                  e.preventDefault();
-                  const dadosDoForm = new FormData(e.target)
-                  const record = await client.items.create({
-                    itemType: '967610',
-                    title: dadosDoForm.get('title'),
-                    imageurl: dadosDoForm.get('image')
-                  });
-                  const updatedCumunity = [...comunidades, record]
-                  setComunidades(updatedCumunity)
-                  e.target.reset()
-                } catch (error) {
-                  console.log(error)
+            <form onSubmit={function handleCriaComunidade(e) {
+                e.preventDefault();
+                const dadosDoForm = new FormData(e.target);
+
+                console.log('Campo: ', dadosDoForm.get('title'));
+                console.log('Campo: ', dadosDoForm.get('image'));
+
+                const comunidade = {
+                  title: dadosDoForm.get('title'),
+                  imageurl: dadosDoForm.get('image'),
+                  creatorslug: githubUser,
                 }
-              }
-            }
+
+                fetch('/api/comunidades', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(comunidade)
+                })
+                .then(async (response) => {
+                  const dados = await response.json();
+                  console.log(dados.registroCriado);
+                  const comunidade = dados.registroCriado;
+                  const comunidadesAtualizadas = [...comunidades, comunidade];
+                  setComunidades(comunidadesAtualizadas)
+                })
+            }}
             //fim
             >
               <div>
@@ -142,7 +164,7 @@ export default function Home() {
             <ul>
               {comunidades.slice(0,6).map((itemAtual) => {
                 return (
-                  <li key={itemAtual.id}><a href={`/${itemAtual.title}`} >
+                  <li key={itemAtual.id}><a href={`/comunidades/${itemAtual.id}`} >
                     <img src={itemAtual.imageurl} />
                     <span>{itemAtual.title}</span>
                   </a></li>
@@ -156,7 +178,7 @@ export default function Home() {
             <ul>
               {pessoasFavoritas.slice(0, 6).map((itemAtual) => {
                 return (
-                  <li key={itemAtual}><a href={`https://github.com/${itemAtual}`} >
+                  <li key={itemAtual} ><a /*href={`/${itemAtual}`}*/ >
                     <img src={`https://github.com/${itemAtual}.png`} />
                     <span>{itemAtual}</span>
                   </a></li>
