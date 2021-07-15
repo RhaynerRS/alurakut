@@ -3,12 +3,12 @@ const { SiteClient } = require('datocms-client')
 
 export default async function recebedorDeRequests(request,response){
     if (request.method==='POST'){
-        const TOKEN ='98ed52190da0354328bc8ed17cc8a8'
+        const TOKEN ='ecb80bbec9a2e648d135577b0562b3'
 
         const client = new SiteClient(TOKEN)
 
         const record=await client.items.create({ 
-            itemType: '967610',
+            itemType: '107224',
             ...request.body,
             /*title: dadosDoForm.get('title'),
             imageurl: dadosDoForm.get('image'),
