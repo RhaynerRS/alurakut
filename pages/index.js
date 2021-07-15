@@ -76,7 +76,6 @@ export default function Home() {
     .then((response) => response.json()) // Pega o retorno do response.json() e já retorna
     .then((respostaCompleta) => {
       const comunidadesVindasDoDato = respostaCompleta.data.allCommunities;
-      console.log(comunidadesVindasDoDato)
       setComunidades(comunidadesVindasDoDato)
     })
   //fim
@@ -127,7 +126,6 @@ export default function Home() {
                 })
                 .then(async (response) => {
                   const dados = await response.json();
-                  console.log(dados.registroCriado);
                   const comunidade = dados.registroCriado;
                   const comunidadesAtualizadas = [...comunidades, comunidade];
                   setComunidades(comunidadesAtualizadas)
