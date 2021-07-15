@@ -1,3 +1,5 @@
+const {SiteClient}=require('datocms-client')
+const client=new SiteClient('98ed52190da0354328bc8ed17cc8a8')
 import React from 'react'
 import {useState} from 'react';
 import { useEffect } from 'react';
@@ -6,6 +8,9 @@ import Box from '../src/components/Box'
 import {AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet} from '../src/lib/alurakutCommons.js'
 import {ProfileRelationsBoxWrapper} from '../src/components/ProfileRelations'
 
+
+//sidebar do perfil
+//inicio
 function ProfileSidebar(props){
   return(
   <Box as="aside">
@@ -17,35 +22,60 @@ function ProfileSidebar(props){
     <AlurakutProfileSidebarMenuDefault />
   </Box>)
 }
+//fim
+
+//Box dos seguidores puxando dados da API do Github
+//inicio
 function GithubFollowers(props){
   return(<ProfileRelationsBoxWrapper>
     <h2 className="smallTitle">{props.title} ({props.items.length})</h2>
 
   <ul>
-  {/*{props.items((itemAtual)=>{return(
-  <li key={itemAtual.id}><a href={`https://github.com/${props.items.login}`} >
-    <img src={itemAtual.image}/>
-    <span>{itemAtual.title}</span>
+  {props.items.slice(0,6).map((itemAtual)=>{return(
+  <li key={itemAtual.id}><a href={`https://github.com/${itemAtual.login}`} >
+    <img src={itemAtual.avatar_url}/>
+    <span>{itemAtual.login}</span>
   </a></li>
-  )})}*/}
+  )})}
   </ul>
 
   </ProfileRelationsBoxWrapper>)
 }
+//fim
+
+
+
 export default function Home() {
   const [comunidades,setComunidades]=useState([]);
-  const githubUser = "tetzdesen"
-  const pessoasFavoritas=["tetzdesen","juunegreiros","omariosouto"]
+  const githubUser = 'tetzdesen'
+  const pessoasFavoritas=["RhaynerRS","juunegreiros","omariosouto","tetzdesen","esin","nathyts","RhaynerRS","juunegreiros","omariosouto"]
 
-  const [segidores,setSegidores]=useState([])
+    //pego os dados dos seguidores por meio da API do Github
+    //inicio
+    const [segidores,setSegidores]=useState([])
+      
+      useEffect(async()=>{
+        try{
+          const comunity=await client.items.all({filter: {type:"community"}})
+          setComunidades(comunity)
+          console.log(comunity)
+        }catch(error){
+          console.log(error)
+        }
+      },[])
+    //fim
+
+    //useState que busca os seguidores na api do githib e os exibe
+    //inicio
     useEffect(function(){
+      
       fetch(`https://api.github.com/users/${githubUser}/followers`).then
       (function (respostaServidor){if(respostaServidor.ok)
       { return respostaServidor.json()}
       throw new Error (`Aconteceu algo errado ( ${respostaServidor.status} )`)})
-      .then(function(respostaConvertida){setSegidores(respostaConvertida)});
+      .then(function(respostaConvertida){setSegidores(respostaConvertida);});
     },[])
-    
+    //fim
   return (
   <>
   <AlurakutMenu githubUser={githubUser}/>
@@ -58,17 +88,27 @@ export default function Home() {
       <OrkutNostalgicIconSet/>
       </Box>
       <Box><h2 className="subTitle">O que você deseja fazer</h2>
-        <form onSubmit={ function handleSubmit(e){
-          e.preventDefault()
-          const dadosDoForm=new FormData(e.target)
-          const comunidade={
-            id:new Date().toISOString(),
-            image:dadosDoForm.get('image'),
-            title:dadosDoForm.get('title')
+        <form onSubmit={
+          //função assincrona que grava dados no DATO
+          //inicio
+          async function createRecord(e){
+            try{
+                e.preventDefault();
+                const dadosDoForm=new FormData(e.target)
+                console.log(dadosDoForm.title)
+                const record=await client.items.create({itemType:'967610',
+                title:dadosDoForm.get('title'),
+                imageurl:dadosDoForm.get('image')});
+                const updatedCumunity=[...comunidades,record]
+                setComunidades(updatedCumunity)
+                e.target.reset()
+              }catch(error){
+                console.log(error)
+              }
+            }
           }
-          setComunidades([...comunidades,comunidade])
-          console.log(comunidades)
-        }}>
+          //fim
+          >
           <div>
             <input type="text" placeholder="Qual vai ser o nome da sua comunidade?" 
             name="title" 
@@ -96,9 +136,9 @@ export default function Home() {
       <ProfileRelationsBoxWrapper><h2 className="smallTitle">Comunidades ({comunidades.length})</h2>
 
         <ul>
-        {comunidades.map((itemAtual)=>{return(
-        <li key={itemAtual.id}><a href={`https://github.com/${itemAtual.title}`} >
-          <img src={itemAtual.image}/>
+        {comunidades.slice(0,6).map((itemAtual)=>{return(
+        <li key={itemAtual.id}><a href={`/${itemAtual.title}`} >
+          <img src={itemAtual.imageurl}/>
           <span>{itemAtual.title}</span>
         </a></li>
         )})}
@@ -108,12 +148,12 @@ export default function Home() {
       <ProfileRelationsBoxWrapper><h2 className="smallTitle">Pessoas Favoritas ({pessoasFavoritas.length})</h2>
 
         <ul>
-        {pessoasFavoritas.map((itemAtual)=>{return(
+        {pessoasFavoritas.slice(0,6).map((itemAtual)=>{return(
         <li key={itemAtual}><a href={`https://github.com/${itemAtual}`} >
           <img src={`https://github.com/${itemAtual}.png`}/>
           <span>{itemAtual}</span>
         </a></li>
-        )})}
+        );})}
         </ul>
 
       </ProfileRelationsBoxWrapper>
