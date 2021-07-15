@@ -1,5 +1,5 @@
 const { SiteClient } = require('datocms-client')
-const client = new SiteClient('6686f9aada7e6525140114c9ffc9b6')
+const client = new SiteClient('98ed52190da0354328bc8ed17cc8a8')
 import React from 'react'
 import { useState } from 'react';
 import { useEffect } from 'react';
